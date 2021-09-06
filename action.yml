@@ -1,0 +1,40 @@
+
+name: 'Terraform remote state'
+description: 'Get a variable from a terraform remote workspace'
+inputs:
+  aws-key:
+    description: 'The AWS Account Key'
+    required: true
+  aws-secret:
+    description: 'The AWS secret'
+    required: true
+  vending-token:
+    description: 'Token to be used by credential vending service (or set to `na` if not required).'
+    required: true
+  tests-file:
+    description: 'File containing the postman tests.'
+    required: true
+  env-file:
+    description: 'Redacted postman environment file'
+    required: true
+runs:
+    using: "composite"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Prepare environment file
+        shell: bash
+        run: cat {{ inputs.env-file }} | sed 's@REDACTED_AWS_SECRET@${{ inputs.aws-secret }}@' | sed 's@REDACTED_AWS_ACCOUNT_KEY@${{ inputs.aws-key }}@' | sed 's@REDACTED_VENDING_TOKEN@${{ inputs.vending-token }}@' > activated_env.json
+      - name: Set-up node
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '12'
+      - name: Install newman package
+        shell: bash
+        run: npm install -g newman
+      - name: Run newman
+        shell: bash
+        run: newman run {{ inputs.tests-file }} -e activated_env.json --color on
+      - name: Clean-up environment file
+        shell: bash
+        run: rm activated_env.json
