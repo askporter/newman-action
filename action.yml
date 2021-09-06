@@ -24,7 +24,7 @@ runs:
         uses: actions/checkout@v2
       - name: Prepare environment file
         shell: bash
-        run: cat {{ inputs.env-file }} | sed 's@REDACTED_AWS_SECRET@${{ inputs.aws-secret }}@' | sed 's@REDACTED_AWS_ACCOUNT_KEY@${{ inputs.aws-key }}@' | sed 's@REDACTED_VENDING_TOKEN@${{ inputs.vending-token }}@' > activated_env.json
+        run: cat ${{ inputs.env-file }} | sed 's@REDACTED_AWS_SECRET@${{ inputs.aws-secret }}@' | sed 's@REDACTED_AWS_ACCOUNT_KEY@${{ inputs.aws-key }}@' | sed 's@REDACTED_VENDING_TOKEN@${{ inputs.vending-token }}@' > activated_env.json
       - name: Set-up node
         uses: actions/setup-node@v2-beta
         with:
@@ -34,7 +34,7 @@ runs:
         run: npm install -g newman
       - name: Run newman
         shell: bash
-        run: newman run {{ inputs.tests-file }} -e activated_env.json --color on
+        run: newman run ${{ inputs.tests-file }} -e activated_env.json --color on
       - name: Clean-up environment file
         shell: bash
         run: rm activated_env.json
